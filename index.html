@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alba Rodríguez — Data Scientist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #13131f;
+    --surface: #1c1c2a;
+    --surface2: #252535;
+    --accent: #00e5a0;
+    --accent2: #7c6aff;
+    --text: #e8e8f0;
+    --muted: #c8c8d8;
+    --border: rgba(255,255,255,0.07);
+    --mono: 'DM Mono', monospace;
+    --body: 'Inter', sans-serif;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 3rem;
+    background: rgba(19,19,31,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 3rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-inner {
+    max-width: 900px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+
+  h1 .name { color: var(--text); }
+  h1 .role {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.25);
+    display: block;
+  }
+
+  .hero-desc {
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.5s;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.65s;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background: #00ffb3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,229,160,0.3);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  /* Floating terminal decoration */
+  .hero-terminal {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+    display: none;
+  }
+
+  @media (min-width: 1100px) { .hero-terminal { display: block; } }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .terminal-body {
+    padding: 1rem 1.2rem;
+    font-size: 0.75rem;
+    line-height: 2;
+  }
+
+  .t-line { display: flex; gap: 0.5rem; }
+  .t-prompt { color: var(--accent); }
+  .t-cmd { color: var(--text); }
+  .t-output { color: var(--muted); padding-left: 1rem; }
+  .t-cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--accent);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  /* ── SKILLS BAR ── */
+  .skills-bar {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .skills-track {
+    display: flex;
+    gap: 2.5rem;
+    animation: scroll 25s linear infinite;
+    white-space: nowrap;
+  }
+
+  .skill-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .skill-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-label::after {
+    content: '';
+    display: block;
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 3rem;
+  }
+
+  /* ── PROJECTS GRID ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .project-card {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,229,160,0.05) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .project-card:hover { background: var(--surface2); }
+  .project-card:hover::before { opacity: 1; }
+
+  .project-type {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent2);
+  }
+
+  .project-title {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    color: var(--text);
+  }
+
+  .project-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .tag {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    background: rgba(124,106,255,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(124,106,255,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  .tag.green {
+    background: rgba(0,229,160,0.08);
+    color: var(--accent);
+    border-color: rgba(0,229,160,0.2);
+  }
+
+  .project-arrow {
+    position: absolute;
+    top: 1.5rem; right: 1.5rem;
+    color: var(--muted);
+    font-size: 1rem;
+    transition: all 0.2s;
+    opacity: 0;
+  }
+
+  .project-card:hover .project-arrow {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    color: var(--accent);
+  }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+
+  .about-text p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.9;
+    margin-bottom: 1rem;
+  }
+
+  .about-text p strong { color: var(--text); font-weight: 500; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 1.5rem;
+  }
+
+  .stat-num {
+    font-family: var(--sans);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── CONTACT ── */
+  #contact {
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .contact-inner {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .contact-inner p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 2rem;
+  }
+
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .social-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .social-link:hover { color: var(--accent); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem 3rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    #hero { padding: 0 1.5rem; }
+    section { padding: 4rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">AR_</a>
+  <ul class="nav-links">
+    <li><a href="#projects">Proyectos</a></li>
+    <li><a href="#about">Sobre mí</a></li>
+    <li><a href="#languages">Idiomas</a></li>
+    <li><a href="#contact">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero" style="max-width:100%;padding-top:5rem;">
+  <div class="hero-inner">
+    <div class="hero-tag">Data Scientist</div>
+    <h1>
+      <span class="name">Alba Rodríguez</span>
+      <span class="role">transformo datos<br>en decisiones</span>
+    </h1>
+    <p class="hero-desc">
+      Perfil híbrido en Data Science y marketing digital. Combino análisis de datos, machine learning y visión de negocio para transformar información en decisiones estratégicas.
+    </p>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn btn-primary">Ver proyectos →</a>
+      <a href="mailto:albarodriguezperales7@gmail.com" class="btn btn-outline">Contactar</a>
+    </div>
+  </div>
+
+  <!-- Terminal decoration -->
+  <div class="hero-terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-prompt">~$</span><span class="t-cmd">python modelo.py</span></div>
+      <div class="t-output">Loading dataset... ✓</div>
+      <div class="t-output">Training model... ✓</div>
+      <div class="t-output">Accuracy: 94.7%</div>
+      <div class="t-output">F1-Score: 0.943</div>
+      <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">~$</span><span class="t-cmd">deploy.sh --env prod</span></div>
+      <div class="t-output">Building container... ✓</div>
+      <div class="t-output">Deployed to API ✓</div>
+      <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">~$</span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS SCROLLING BAR -->
+<div class="skills-bar">
+  <div class="skills-track">
+    <span class="skill-pill"><span class="skill-dot"></span>Python</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Scikit-learn</span>
+    <span class="skill-pill"><span class="skill-dot"></span>TensorFlow</span>
+    <span class="skill-pill"><span class="skill-dot"></span>PyTorch</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Pandas</span>
+    <span class="skill-pill"><span class="skill-dot"></span>SQL</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Tableau</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Docker</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Git</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Flask</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Matplotlib</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Seaborn</span><span class="skill-pill"><span class="skill-dot"></span>AWS</span><span class="skill-pill"><span class="skill-dot"></span>APIs</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Claude</span>
+    <span class="skill-pill"><span class="skill-dot"></span>ChatGPT</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Copilot</span>
+    <!-- duplicado para loop continuo -->
+    <span class="skill-pill"><span class="skill-dot"></span>Python</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Scikit-learn</span>
+    <span class="skill-pill"><span class="skill-dot"></span>TensorFlow</span>
+    <span class="skill-pill"><span class="skill-dot"></span>PyTorch</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Pandas</span>
+    <span class="skill-pill"><span class="skill-dot"></span>SQL</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Tableau</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Docker</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Git</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Flask</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Matplotlib</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Seaborn</span><span class="skill-pill"><span class="skill-dot"></span>AWS</span><span class="skill-pill"><span class="skill-dot"></span>APIs</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Claude</span>
+    <span class="skill-pill"><span class="skill-dot"></span>ChatGPT</span>
+    <span class="skill-pill"><span class="skill-dot"></span>Copilot</span>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-label">Trabajo</div>
+  <h2>Proyectos destacados</h2>
+
+  <div class="projects-grid"><a href="https://github.com/albarodriguez7/EDA_Airbnb" target="_blank" class="project-card">
+      <span class="project-arrow">↗</span>
+      <div class="project-type">Machine Learning</div>
+      <div class="project-title">Predicción de precios Airbnb</div>
+      <div class="project-desc">
+        Análisis exploratorio de datos de Airbnb en Madrid para identificar los principales factores que afectan al precio y comportamiento del mercado.
+      </div>
+      <div class="project-tags">
+        <span class="tag">NumPy</span>
+        <span class="tag">Pandas</span>
+        <span class="tag">Matplotlib</span>
+        <span class="tag">Seaborn</span>
+      </div>
+    </a>
+<a href="https://github.com/albarodriguez7/ML_Infracciones_Trafico" target="_blank" class="project-card">
+      <span class="project-arrow">↗</span>
+      <div class="project-type">Deep Learning</div>
+      <div class="project-title">ML Infracciones de Tráfico</div>
+      <div class="project-desc">
+        Modelo de machine learning para predecir infracciones de tráfico a partir de datos históricos, aplicando técnicas de clasificación y evaluación de modelos..
+      </div>
+      <div class="project-tags">
+        <span class="tag">Pandas</span>
+        <span class="tag">NumPy</span>
+        <span class="tag">Scikit-learn</span>
+        <span class="tag">LightGBM</span>
+        <span class="tag">XGBoost</span>
+        <span class="tag">Seaborn</span>
+        <span class="tag">Matplotlib</span>
+        <span class="tag">SciPy</span>
+      </div>
+    </a>
+<a href="https://github.com/albarodriguez7/API_Infracciones_Trafico" target="_blank" class="project-card">
+      <span class="project-arrow">↗</span>
+      <div class="project-type">Data Analysis</div>
+      <div class="project-title">API Infracciones de Tráfico</div>
+      <div class="project-desc">
+        Desarrollo de una API REST con Flask para exponer un modelo de machine learning capaz de predecir infracciones de tráfico en tiempo real.
+      </div>
+      <div class="project-tags">
+        <span class="tag">FastAPI</span>
+        <span class="tag">Pydantic</span>
+        <span class="tag">Pandas</span>
+        <span class="tag">NumPy</span>
+        <span class="tag">Pickle</span>
+        <span class="tag">Uvicorn</span>
+      </div>
+    </a></div>
+</section>
+
+<!-- ABOUT -->
+
+<section id="workflow">
+  <div class="section-label">Proceso</div>
+  <h2>Cómo trabajo</h2>
+  <div class="projects-grid">
+    <div class="project-card"><div class="project-title">1. Exploración</div><div class="project-desc">Análisis exploratorio de datos (EDA), limpieza y comprensión del dataset.</div></div>
+    <div class="project-card"><div class="project-title">2. Modelado</div><div class="project-desc">Aplicación de modelos de Machine Learning y selección del mejor enfoque.</div></div>
+    <div class="project-card"><div class="project-title">3. Evaluación</div><div class="project-desc">Validación de resultados mediante métricas y optimización del modelo.</div></div>
+    <div class="project-card"><div class="project-title">4. Deploy</div><div class="project-desc">Despliegue de modelos mediante APIs y herramientas cloud.</div></div>
+    <div class="project-card"><div class="project-title">5. IA aplicada</div><div class="project-desc">Integro herramientas como Copilot, Claude y ChatGPT a lo largo de todo el proceso: desde la exploración de datos hasta la documentación final. Usarlas bien marca la diferencia en velocidad y calidad.</div></div>
+  </div>
+</section>
+<section id="about">
+  <div class="section-label">Sobre mí</div>
+  <h2>Quién soy</h2>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        Soy <strong>Alba Rodríguez</strong>, recién graduada en Data Science con pasión por extraer valor de los datos y construir modelos que resuelven problemas reales.
+      </p>
+      <p>
+        Durante mi formación he trabajado con datasets reales, construido pipelines completos de ML y aprendido a comunicar resultados técnicos de forma clara.
+      </p>
+      <p>
+        Busco mi primera oportunidad como <strong>Data Scientist o ML Engineer</strong> en un equipo donde pueda seguir aprendiendo y aportar desde el primer día.
+      </p>
+      <div style="margin-top:1.5rem">
+        <a href="Curriculum Alba Rodriguez DataScientist.pdf" target="_blank" class="btn btn-outline">
+          Ver CV →
+        </a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-num">+5</div>
+        <div class="stat-label">Proyectos reales</div>
+      </div>
+      
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Aprendizaje continuo</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Miedo a los datos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="languages">
+  <div class="section-label">Idiomas</div>
+  <h2>Idiomas</h2>
+  <div class="projects-grid">
+    <div class="project-card">
+      <div class="project-type">Nativo</div>
+      <div class="project-title">Español</div>
+      <div class="project-desc">Comunicación oral y escrita a nivel nativo. Redacción técnica, presentaciones y documentación sin barreras.</div>
+      <div class="project-tags">
+        <span class="tag green">Nativo</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-type">B2 – C1</div>
+      <div class="project-title">Inglés</div>
+      <div class="project-desc">Comprensión oral y escrita sólida: lectura fluida de documentación técnica, papers y recursos especializados. Expresión oral funcional y capaz de mantener conversaciones profesionales con soltura progresiva.</div>
+      <div class="project-tags">
+        <span class="tag">B2 – C1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+
+
+
+<section id="education">
+  <div class="section-label">Formación</div>
+  <h2>Formación en Data Science</h2>
+  <div class="about-text">
+    <p><strong>Bootcamp Data Science — The Bridge</strong></p>
+    <p>
+    Formación intensiva basada en proyectos reales (22 semanas), trabajando con Python, Machine Learning y despliegue en producción.
+    </p>
+  </div>
+  <div class="projects-grid" style="margin-top:2rem;">
+    <div class="project-card">
+      <div class="project-type">Módulo 1</div>
+      <div class="project-title">Ramp-up</div>
+      <div class="project-desc">Introducción a Data Science, fundamentos matemáticos y estadísticos, y programación con Python desde cero.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-type">Módulo 2</div>
+      <div class="project-title">Data Analysis</div>
+      <div class="project-desc">Acceso a datos (archivos, APIs, web scraping), bases de datos SQL e introducción a NoSQL, limpieza y preprocesamiento, EDA, feature engineering y visualización avanzada.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-type">Módulo 3</div>
+      <div class="project-title">Machine Learning</div>
+      <div class="project-desc">Aprendizaje supervisado e no supervisado, evaluación de modelos, validación cruzada, redes neuronales (DNN, CNN, RNN), transfer learning, fine-tuning e introducción a IA Generativa.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-type">Módulo 4</div>
+      <div class="project-title">Data Science &amp; Negocio</div>
+      <div class="project-desc">Productización y despliegue de modelos, storytelling y comunicación de resultados, construcción de productos de datos orientados al negocio.</div>
+    </div>
+  </div>
+</section>
+
+<section id="highlights">
+  <div class="section-label">Highlights</div>
+  <h2>Lo que aporto</h2>
+  <div class="projects-grid">
+    <div class="project-card">
+      <div class="project-title">Enfoque Data + Negocio</div>
+      <div class="project-desc">
+        Experiencia previa en marketing digital aplicada al análisis de datos y toma de decisiones.
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-title">Proyectos</div>
+      <div class="project-desc">
+        Desarrollo de proyectos end-to-end: desde EDA hasta modelos y despliegue en producción.
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-title">Stack técnico completo</div>
+      <div class="project-desc">
+        Python, Machine Learning, APIs, Docker, AWS y visualización de datos.
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-title">IA como multiplicador</div>
+      <div class="project-desc">
+        Uso avanzado de herramientas de inteligencia artificial — Copilot, Claude, ChatGPT y similares — para acelerar el desarrollo, depurar código y generar documentación técnica. La IA no reemplaza el criterio, lo amplifica.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="current">
+  <div class="section-label">Actualmente</div>
+  <h2>En qué estoy ahora</h2>
+  <div class="about-text">
+    <p>Profundizando en Machine Learning, despliegue de modelos y desarrollo de APIs.</p>
+    <p>Construyendo proyectos personales orientados a problemas reales y mejora continua de mis habilidades técnicas.</p>
+  </div>
+</section>
+<section id="contact">
+  <div class="contact-inner">
+    <div class="section-label" style="justify-content:center;">Contacto</div>
+    <h2>¿Hablamos?</h2>
+    <p>
+      Busco oportunidades como Data Scientist donde aplicar análisis de datos, machine learning y aportar valor desde el primer día.
+      Si tienes un proyecto interesante o una oferta, escríbeme.
+    </p>
+    <a href="mailto:albarodriguezperales7@gmail.com" class="btn btn-primary">✉ albarodriguezperales7@gmail.com</a>
+
+    <div class="social-links">
+      <a href="https://linkedin.com/in/albarodriguezperales" target="_blank" class="social-link">LinkedIn ↗</a>
+      <a href="https://github.com/albarodriguez7" target="_blank" class="social-link">GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Alba Rodríguez Perales — Data Scientist · 2025
+</footer>
+
+</body>
+</html>
