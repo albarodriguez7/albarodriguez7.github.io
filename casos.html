@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script>document.documentElement.classList.add('js');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casos de estudio — Alba Rodríguez</title>
+<meta name="description" content="Casos de estudio de agentes de IA con LangGraph: cualificación de leads evaluada en LangSmith y asistente de reservas con herramientas, RAG y SQLite.">
+<link rel="canonical" href="https://albarodriguez7.github.io/casos.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://albarodriguez7.github.io/casos.html">
+<meta property="og:title" content="Casos de estudio — Alba Rodríguez, Junior AI Engineer">
+<meta property="og:description" content="Cómo diseñé, evalué y mejoré dos agentes de IA con LangGraph: decisiones, métricas y limitaciones.">
+<meta property="og:image" content="https://albarodriguez7.github.io/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://albarodriguez7.github.io/og-image.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMxMzEzMWYiLz48dGV4dCB4PSI1MCUiIHk9IjU0JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlN5bmUsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCIgZm9udC1zaXplPSIyNiIgZmlsbD0iIzAwZTVhMCI+QVI8L3RleHQ+PC9zdmc+">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #13131f;
+    --surface: #1c1c2a;
+    --surface2: #252535;
+    --accent: #00e5a0;
+    --accent2: #7c6aff;
+    --text: #e8e8f0;
+    --muted: #c8c8d8;
+    --border: rgba(255,255,255,0.07);
+    --mono: 'DM Mono', monospace;
+    --body: 'Inter', sans-serif;
+    --sans: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 3rem;
+    background: rgba(19,19,31,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--sans); font-weight: 800; font-size: 1.1rem; color: var(--accent); text-decoration: none; }
+  .nav-back { margin-left: auto; color: var(--muted); text-decoration: none; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav-back:hover { color: var(--accent); }
+  .lang-toggle {
+    background: transparent; border: 1px solid var(--border); border-radius: 4px;
+    color: var(--muted); font-family: var(--mono); font-size: 0.72rem; padding: 0.3rem 0.6rem; cursor: pointer;
+  }
+  .lang-toggle:hover { border-color: var(--accent); }
+  .lang-toggle [data-l] { opacity: 0.5; }
+  html[lang="es"] .lang-toggle [data-l="es"],
+  html[lang="en"] .lang-toggle [data-l="en"] { color: var(--accent); opacity: 1; }
+
+  main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 8rem 1.5rem 4rem; }
+
+  .label {
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
+  }
+  .label::after { content: ''; height: 1px; width: 40px; background: var(--accent); opacity: 0.4; }
+
+  h1 { font-family: var(--sans); font-weight: 800; font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.2rem; }
+  .lead { color: var(--muted); font-size: 0.95rem; max-width: 640px; }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 2rem 0 0; }
+  .toc a {
+    font-family: var(--mono); font-size: 0.78rem; color: var(--text); text-decoration: none;
+    padding: 0.55rem 1rem; border: 1px solid var(--border); border-radius: 4px; background: var(--surface);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  article { margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--border); scroll-margin-top: 4rem; }
+  article h2 { font-family: var(--sans); font-weight: 700; font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.6rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 2rem; }
+  .tag {
+    font-size: 0.68rem; padding: 0.2rem 0.6rem; border-radius: 3px;
+    background: rgba(124,106,255,0.1); color: var(--accent2); border: 1px solid rgba(124,106,255,0.2);
+  }
+  h3 {
+    font-family: var(--sans); font-weight: 600; font-size: 1.15rem; margin: 2.5rem 0 0.8rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  h3 .n { font-family: var(--mono); font-size: 0.72rem; color: var(--accent2); font-weight: 400; }
+  p { color: var(--muted); margin-bottom: 0.9rem; }
+  p strong, li strong { color: var(--text); font-weight: 500; }
+  code { font-family: var(--mono); font-size: 0.82em; color: #c3e88d; background: rgba(255,255,255,0.05); padding: 0.05rem 0.3rem; border-radius: 3px; }
+
+  .panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 1.4rem; margin: 1rem 0; }
+  pre.panel { font-family: var(--mono); font-size: 0.75rem; line-height: 1.7; color: var(--text); overflow-x: auto; white-space: pre; }
+  pre .k { color: var(--accent); } pre .c { color: #6b6b85; }
+
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .metric b { display: block; font-family: var(--sans); font-size: 1.5rem; color: var(--accent); line-height: 1.1; margin-bottom: 0.3rem; }
+  .metric span { font-size: 0.72rem; color: var(--muted); line-height: 1.35; display: block; }
+
+  .decisions { display: grid; gap: 0.75rem; }
+  .decision { background: var(--surface); border: 1px solid var(--border); border-left: 2px solid var(--accent2); border-radius: 6px; padding: 1rem 1.2rem; }
+  .decision b { display: block; font-family: var(--sans); font-weight: 600; color: var(--text); margin-bottom: 0.3rem; }
+  .decision p { margin: 0; font-size: 0.88rem; }
+
+  ol.cycle { list-style: none; counter-reset: c; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 1rem 0; }
+  @media (max-width: 640px) { ol.cycle { grid-template-columns: 1fr 1fr; } }
+  ol.cycle li { counter-increment: c; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem; font-size: 0.82rem; color: var(--muted); }
+  ol.cycle li::before { content: counter(c); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,229,160,0.12); color: var(--accent); font-family: var(--mono); font-size: 0.72rem; margin-bottom: 0.5rem; }
+
+  ul.list { list-style: none; display: grid; gap: 0.5rem; margin: 0.5rem 0 1rem; }
+  ul.list li { color: var(--muted); padding-left: 1.2rem; position: relative; font-size: 0.9rem; }
+  ul.list li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+  ul.list.warn li::before { content: '!'; color: #febc2e; font-family: var(--mono); }
+
+  /* Diagrama */
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .d-node rect { fill: var(--surface2); stroke: rgba(255,255,255,0.16); stroke-width: 1.5; }
+  .d-node.ai rect { stroke: rgba(124,106,255,0.6); fill: rgba(124,106,255,0.1); }
+  .d-node.code rect { stroke: rgba(0,229,160,0.5); fill: rgba(0,229,160,0.07); }
+  .d-node.term rect { fill: transparent; stroke: rgba(255,255,255,0.25); stroke-dasharray: 4 4; }
+  .d-node text { fill: var(--text); font-family: var(--mono); font-size: 13px; text-anchor: middle; dominant-baseline: middle; }
+  .d-node text.s { fill: var(--muted); font-size: 9.5px; opacity: 0.8; }
+  .d-edge { fill: none; stroke: rgba(255,255,255,0.25); stroke-width: 1.5; }
+  .d-edge.flow { stroke: var(--accent); stroke-dasharray: 6 10; animation: flow 1.2s linear infinite; opacity: 0.8; }
+  .d-label { fill: var(--muted); font-family: var(--mono); font-size: 9.5px; opacity: 0.7; }
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.8rem; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.4rem; vertical-align: -1px; }
+
+  .stack { display: grid; gap: 0.5rem; }
+  .layer { display: grid; grid-template-columns: 170px 1fr; gap: 1rem; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; position: relative; }
+  .layer + .layer::before { content: '↓'; position: absolute; top: -0.95rem; left: 85px; color: var(--accent); font-size: 0.8rem; line-height: 1; }
+  .layer b { font-family: var(--mono); font-weight: 400; font-size: 0.8rem; color: var(--accent); }
+  .layer span { font-size: 0.82rem; color: var(--muted); }
+  .layer.ai b { color: var(--accent2); }
+  @media (max-width: 560px) { .layer { grid-template-columns: 1fr; gap: 0.2rem; } .layer + .layer::before { left: 1rem; } }
+
+  .links { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.5rem; font-family: var(--mono); font-size: 0.78rem;
+    text-decoration: none; border-radius: 4px; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; font-weight: 500; }
+  .btn-primary:hover { background: #00ffb3; transform: translateY(-2px); }
+  .btn-outline { color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--muted); }
+
+  .js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .js .reveal.in { opacity: 1; transform: none; }
+
+  @keyframes flow { to { stroke-dashoffset: -16; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">AR_</a>
+  <a href="index.html" class="nav-back" data-en="← Portfolio">← Portfolio</a>
+  <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Cambiar idioma / Change language"><span data-l="es">ES</span> / <span data-l="en">EN</span></button>
+</nav>
+
+<main>
+  <div class="label" data-en="Case studies">Casos de estudio</div>
+  <h1 data-en="How I design, measure<br>and improve agents">Cómo diseño, mido<br>y mejoro agentes</h1>
+  <p class="lead" data-en="Two LangGraph projects told from the inside: the problem, the architecture, the decisions I made and why, the metrics, and what's still missing.">Dos proyectos con LangGraph contados desde dentro: el problema, la arquitectura, las decisiones que tomé y por qué, las métricas y lo que todavía falta.</p>
+  <div class="toc">
+    <a href="#leads" data-en="01 · Lead qualification agent">01 · Agente de cualificación de leads</a>
+    <a href="#reservas" data-en="02 · AI booking assistant">02 · Asistente de reservas con IA</a>
+  </div>
+
+  <!-- ═════════ CASO 1: LEADS ═════════ -->
+  <article id="leads">
+    <div class="label" data-en="Case 01">Caso 01</div>
+    <h2 data-en="Lead qualification agent">Agente de cualificación de leads</h2>
+    <div class="meta">
+      <span class="tag">LangGraph</span><span class="tag">LangSmith</span><span class="tag">Pydantic</span>
+      <span class="tag">GPT-4.1 mini</span><span class="tag">pytest</span><span class="tag">BeautifulSoup</span>
+    </div>
+
+    <h3 class="reveal"><span class="n">01</span><span data-en="The problem">El problema</span></h3>
+    <p class="reveal" data-en="A marketing agency for local businesses in Madrid gets leads every day: someone downloads a guide, asks for an audit or subscribes to the newsletter. Qualifying them by hand means visiting each company's website, finding out what it does, where it is and how many locations it has — several minutes of repetitive work per lead.">Una agencia de marketing para negocios locales de Madrid recibe leads cada día: alguien descarga una guía, pide una auditoría o se suscribe a la newsletter. Cualificarlos a mano significa entrar en la web de cada empresa, averiguar a qué se dedica, dónde está y cuántas sedes tiene: varios minutos de trabajo repetitivo por lead.</p>
+
+    <h3 class="reveal"><span class="n">02</span><span data-en="Architecture">Arquitectura</span></h3>
+    <p class="reveal" data-en="A LangGraph graph built node by node. Only two nodes use AI; the rest is plain code.">Un grafo de LangGraph construido nodo a nodo. Solo dos nodos usan IA; el resto es código.</p>
+    <div class="panel diagram reveal">
+      <svg viewBox="0 0 720 230" role="img" aria-label="Grafo: inicio, investigar, herramientas en bucle, extraer, puntuar, fin">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="rgba(255,255,255,0.4)"/></marker></defs>
+        <path class="d-edge" d="M78 150 L118 150" marker-end="url(#ar)"/>
+        <path class="d-edge" d="M180 124 C 180 80, 220 60, 262 60" marker-end="url(#ar)"/>
+        <path class="d-edge" d="M328 82 C 300 110, 260 130, 244 132" marker-end="url(#ar)"/>
+        <path class="d-edge flow" d="M244 150 L398 150"/>
+        <path class="d-edge" d="M244 150 L398 150" marker-end="url(#ar)"/>
+        <path class="d-edge" d="M522 150 L556 150" marker-end="url(#ar)"/>
+        <text class="d-label" x="168" y="74" data-en="asks for a page">pide una web</text>
+        <text class="d-label" x="262" y="172" data-en="summary with evidence">resumen con pruebas</text>
+        <g class="d-node term"><rect x="10" y="132" width="66" height="36" rx="18"/><text x="43" y="150" data-en="start">inicio</text></g>
+        <g class="d-node ai"><rect x="118" y="124" width="126" height="52" rx="8"/><text x="181" y="143" data-en="research">investigar</text><text class="s" x="181" y="161" data-en="LLM · decides">LLM · decide</text></g>
+        <g class="d-node code"><rect x="262" y="36" width="140" height="48" rx="8"/><text x="332" y="53" data-en="tools">herramientas</text><text class="s" x="332" y="70" data-en="reads the web · no AI">lee la web · sin IA</text></g>
+        <g class="d-node ai"><rect x="398" y="124" width="124" height="52" rx="8"/><text x="460" y="143" data-en="extract">extraer</text><text class="s" x="460" y="161">LLM → Pydantic</text></g>
+        <g class="d-node code"><rect x="556" y="124" width="124" height="52" rx="8"/><text x="618" y="143" data-en="score">puntuar</text><text class="s" x="618" y="161" data-en="rules · no AI">reglas · sin IA</text></g>
+      </svg>
+      <div class="legend"><span><i style="background:rgba(124,106,255,0.6)"></i><span data-en="uses AI">usa IA</span></span><span><i style="background:rgba(0,229,160,0.5)"></i><span data-en="deterministic code">código determinista</span></span></div>
+    </div>
+
+    <h3 class="reveal"><span class="n">03</span><span data-en="Design decisions">Decisiones de diseño</span></h3>
+    <div class="decisions">
+      <div class="decision reveal"><b data-en="AI extracts, code decides">La IA extrae, el código decide</b><p data-en="The LLM is only used for understanding messy text. Scoring and the final decision are Python rules: always consistent, explainable point by point, free and testable. Changing a business rule means changing a number, not touching the agent.">El LLM se usa solo para entender texto desordenado. La puntuación y la decisión final son reglas en Python: siempre coherentes, explicables punto por punto, gratuitas y comprobables con tests. Cambiar un criterio de negocio es cambiar un número, sin tocar el agente.</p></div>
+      <div class="decision reveal"><b data-en="Evidence instead of conclusions">Pruebas en vez de conclusiones</b><p data-en="Instead of asking the model “how many locations?”, it must copy the addresses or the exact sentence from the website, or write “not found”. This stopped the agent from claiming facts on weak evidence (e.g. “1 location” after reading only the homepage).">En lugar de preguntar al modelo «¿cuántas sedes tiene?», debe copiar literalmente las direcciones o la frase de la web, o escribir «no aparece». Esto evitó que el agente afirmara datos con poca evidencia (por ejemplo, «1 sede» leyendo solo la portada).</p></div>
+      <div class="decision reveal"><b data-en="Ask only for what the decision needs">Pedir solo el dato que la decisión necesita</b><p data-en="An early rule that counted addresses failed on a gym chain with 380+ sites (it said “1 location”). Since the decision only needs the range of locations, I widened what counts as evidence: a sentence from the company itself beats counting addresses.">Una regla inicial que contaba direcciones falló con una cadena de más de 380 gimnasios (dijo «1 sede»). Como la decisión solo necesita el tramo de sedes, amplié qué cuenta como prueba: una frase de la propia empresa vale más que contar direcciones.</p></div>
+      <div class="decision reveal"><b data-en="Important limits live in code">Los límites importantes van en el código</b><p data-en="The maximum of 4 pages per lead doesn't rely on the model obeying the prompt: when it's reached, code removes the tools with <code>tool_choice=&quot;none&quot;</code> and forces the summary.">El máximo de 4 páginas por lead no depende de que el modelo obedezca el prompt: al llegar al límite, el código le retira las herramientas con <code>tool_choice="none"</code> y le obliga a escribir el resumen.</p></div>
+      <div class="decision reveal"><b data-en="One node, one job">Cada nodo, un solo trabajo</b><p data-en="<code>extract</code> only reads the final summary, not the full pages, which cuts the number of tokens a lot."><code>extraer</code> solo lee el resumen final, no las páginas completas, lo que reduce mucho el número de tokens.</p></div>
+    </div>
+
+    <h3 class="reveal"><span class="n">04</span><span data-en="Evaluation">Evaluación</span></h3>
+    <p class="reveal" data-en="LangSmith dataset with 6 real leads, each answer checked by hand, chosen to cover different cases: single site, small chain, huge chain, outside Madrid, hospitality and a home-service business. Four separate evaluators check sector, location, range of sites and final action.">Dataset en LangSmith con 6 leads reales y la respuesta correcta comprobada a mano, elegidos para cubrir casos distintos: una sede, cadena pequeña, cadena enorme, fuera de Madrid, hostelería y un negocio a domicilio. Cuatro evaluadores comprueban por separado el sector, la ubicación, el tramo de sedes y la acción final.</p>
+    <div class="metrics reveal">
+      <div class="metric"><b>6/6</b><span data-en="hits in all 4 evaluators">aciertos en los 4 evaluadores</span></div>
+      <div class="metric"><b data-en="~$0.005">~0,005 $</b><span data-en="per lead (GPT-4.1 mini)">por lead (GPT-4.1 mini)</span></div>
+      <div class="metric"><b>5–10 s</b><span data-en="per lead">por lead</span></div>
+      <div class="metric"><b>16</b><span data-en="rule tests, &lt; 1 s, free">tests de reglas, &lt; 1 s, sin coste</span></div>
+    </div>
+    <p class="reveal" data-en="What I learned by measuring: about <strong>97% of the tokens are input</strong>, because the whole conversation is resent on every turn of the agent. And cost varies quite a bit between runs of the same agent, so comparing versions needs several runs.">Algo que aprendí midiendo: alrededor del <strong>97 % de los tokens son de entrada</strong>, porque en cada vuelta del agente se reenvía toda la conversación. Y el coste varía bastante entre ejecuciones del mismo agente, así que para comparar versiones hay que usar varias ejecuciones.</p>
+
+    <h3 class="reveal"><span class="n">05</span><span data-en="A full improvement cycle">Un ciclo de mejora completo</span></h3>
+    <p class="reveal" data-en="The dataset itself revealed a bug in the rules: a Barcelona academy came out as “contact” for a Madrid agency. I fixed it like this:">El propio dataset reveló un fallo de las reglas: una academia de Barcelona salía como «contactar» para una agencia de Madrid. Lo corregí así:</p>
+    <ol class="cycle reveal">
+      <li data-en="<strong>Test</strong> describing the desired behaviour (fails).">Un <strong>test</strong> que describe el comportamiento deseado (falla).</li>
+      <li data-en="<strong>Code:</strong> a guard clause in the scoring (tests pass).">El <strong>código:</strong> una cláusula de guarda en la puntuación (los tests pasan).</li>
+      <li data-en="<strong>Dataset</strong> updated with the new correct answer.">El <strong>dataset</strong>, actualizado con la nueva respuesta correcta.</li>
+      <li data-en="<strong>Evaluation</strong> of the new version, compared with the old one in LangSmith: only the expected thing changed.">La <strong>evaluación</strong> de la nueva versión, comparada con la anterior en LangSmith: solo cambiaba lo esperado.</li>
+    </ol>
+
+    <h3 class="reveal"><span class="n">06</span><span data-en="Next steps">Próximos pasos</span></h3>
+    <ul class="list reveal">
+      <li data-en="Cut cost by removing repeated text (menus and links) that is resent on every turn, and measure the saving with the dataset.">Reducir el coste eliminando el texto repetido (menús y enlaces) que se reenvía en cada vuelta, y medir el ahorro con el dataset.</li>
+      <li data-en="Have <code>research</code> return its summary as structured data instead of tagged text.">Que <code>investigar</code> entregue su resumen como datos estructurados en lugar de texto con etiquetas.</li>
+      <li data-en="Grow the evaluation dataset with every real case where the agent fails.">Ampliar el dataset de evaluación con cada caso real en el que el agente falle.</li>
+    </ul>
+
+    <div class="links">
+      <a class="btn btn-primary" href="https://github.com/albarodriguez7/AgentesIA_Marketing" target="_blank" rel="noopener" data-en="See the code on GitHub ↗">Ver el código en GitHub ↗</a>
+    </div>
+  </article>
+
+  <!-- ═════════ CASO 2: RESERVAS ═════════ -->
+  <article id="reservas">
+    <div class="label" data-en="Case 02">Caso 02</div>
+    <h2 data-en="AI booking assistant">Asistente de reservas con IA</h2>
+    <div class="meta">
+      <span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">Chroma</span><span class="tag">SQLite</span>
+      <span class="tag">Streamlit</span><span class="tag">Google Calendar API</span><span class="tag">pytest</span><span class="tag">LangSmith</span>
+    </div>
+
+    <h3 class="reveal"><span class="n">01</span><span data-en="The problem">El problema</span></h3>
+    <p class="reveal" data-en="A hair salon in Madrid (a demo business with made-up data) needs customers to check services and opening hours and book, change or cancel appointments on their own — while staff and the owner keep control of the schedule and the numbers.">Una peluquería de Madrid (negocio de demostración con datos inventados) necesita que los clientes consulten servicios y horarios y reserven, modifiquen o cancelen citas por su cuenta, mientras el personal y la propietaria mantienen el control de la agenda y de los números.</p>
+    <div class="metrics reveal">
+      <div class="metric"><b>11</b><span data-en="agent tools">herramientas del agente</span></div>
+      <div class="metric"><b>97</b><span data-en="pytest tests">tests con pytest</span></div>
+      <div class="metric"><b>3</b><span data-en="Streamlit apps">apps en Streamlit</span></div>
+      <div class="metric"><b>90</b><span data-en="days mirrored to Google Calendar">días reflejados en Google Calendar</span></div>
+    </div>
+
+    <h3 class="reveal"><span class="n">02</span><span data-en="Architecture">Arquitectura</span></h3>
+    <div class="stack reveal">
+      <div class="layer"><b>Streamlit</b><span data-en="Customer chat (one <code>thread_id</code> per conversation), staff schedule and owner dashboard, each with its own PIN.">Chat de clientes (un <code>thread_id</code> por conversación), agenda del personal y panel de la propietaria, cada uno con su PIN.</span></div>
+      <div class="layer ai"><b data-en="Agent">Agente</b><span data-en="<code>create_agent</code> + dynamic prompt with today's date in Madrid + <code>InMemorySaver</code> for conversation memory."><code>create_agent</code> + prompt dinámico con la fecha de Madrid + <code>InMemorySaver</code> para la memoria de la conversación.</span></div>
+      <div class="layer ai"><b data-en="RAG + tools">RAG + herramientas</b><span data-en="Chroma with OpenAI embeddings for business questions; 11 tools to search slots, register customers and book, change or cancel.">Chroma con embeddings de OpenAI para dudas del negocio; 11 herramientas para buscar huecos, registrar clientes y reservar, modificar o cancelar.</span></div>
+      <div class="layer"><b data-en="Booking logic">Lógica de reservas</b><span data-en="Plain Python: availability per stylist based on each service's duration, a single <code>config.py</code> as source of truth for hours and time zone.">Python puro: huecos libres por profesional según la duración de cada servicio, y un único <code>config.py</code> como fuente de verdad para horario y zona horaria.</span></div>
+      <div class="layer"><b>SQLite</b><span data-en="Customers and appointments with atomic write transactions.">Clientes y citas con transacciones de escritura atómicas.</span></div>
+      <div class="layer"><b>Google Calendar</b><span data-en="Read-only mirror of each stylist's schedule, synced in the background.">Espejo de solo lectura de la agenda de cada profesional, sincronizado en segundo plano.</span></div>
+    </div>
+
+    <h3 class="reveal"><span class="n">03</span><span data-en="Design decisions">Decisiones de diseño</span></h3>
+    <div class="decisions">
+      <div class="decision reveal"><b data-en="The model never chooses the customer">El modelo nunca decide el cliente</b><p data-en="Once <code>buscar_cliente</code> or <code>registrar_cliente</code> identifies someone, code stores their id for that conversation and every other tool reads it from there. Even if someone tries to manipulate the model (“cancel appointment 3 of customer 3”), it can only act on the identified customer.">Cuando <code>buscar_cliente</code> o <code>registrar_cliente</code> identifican a alguien, el código guarda su id para esa conversación y el resto de herramientas lo leen de ahí. Aunque alguien intente manipular al modelo («cancela la cita 3 del cliente 3»), solo puede actuar sobre el cliente identificado.</p></div>
+      <div class="decision reveal"><b data-en="Dates are given, not calculated">Las fechas se dan, no se calculan</b><p data-en="A <code>@dynamic_prompt</code> rebuilds the prompt on every message with the current date and time in Madrid and a 14-day calendar. The model translates “Friday” or “next week” using that list instead of doing date arithmetic, and it never goes stale.">Un <code>@dynamic_prompt</code> reconstruye el prompt en cada mensaje con la fecha y hora de Madrid y un calendario de 14 días. El modelo traduce «el viernes» o «la semana que viene» con esa lista en lugar de calcular fechas, y nunca queda obsoleto.</p></div>
+      <div class="decision reveal"><b data-en="No double bookings">Sin reservas duplicadas</b><p data-en="Writes use <code>BEGIN IMMEDIATE</code>, which takes SQLite's write lock before checking availability. Two customers — or the chat and a staff member — can't take the same slot at the same time.">Las escrituras usan <code>BEGIN IMMEDIATE</code>, que toma el bloqueo de escritura de SQLite antes de comprobar la disponibilidad. Dos clientes, o el chat y una empleada, no pueden quedarse el mismo hueco a la vez.</p></div>
+      <div class="decision reveal"><b data-en="External services can fail">Los servicios externos pueden fallar</b><p data-en="Google Calendar is a mirror, not the source of truth. If Google fails, the booking is still saved and the next change (or a “Sync now” button) catches up. Only events created by the app are touched.">Google Calendar es un espejo, no la fuente de verdad. Si Google falla, la reserva se guarda igual y el siguiente cambio (o el botón «Sincronizar ahora») lo pone al día. Solo se tocan los eventos creados por la aplicación.</p></div>
+      <div class="decision reveal"><b data-en="A prompt with clear limits">Un prompt con límites claros</b><p data-en="The prompt sets style (one question at a time, no internal ids), the booking flow step by step and what the agent can't do — so it never offers emails or reminders it can't send.">El prompt fija el estilo (una pregunta cada vez, sin ids internos), el flujo de reserva paso a paso y lo que el agente no puede hacer, para que nunca ofrezca emails o recordatorios que no puede enviar.</p></div>
+      <div class="decision reveal"><b data-en="Tests that never touch real data">Tests que nunca tocan datos reales</b><p data-en="97 pytest tests for bookings, calendar sync, analytics and dashboards, all running on a temporary copy of the data folder.">97 tests con pytest para reservas, sincronización del calendario, analítica y paneles, todos sobre una copia temporal de la carpeta de datos.</p></div>
+    </div>
+
+    <h3 class="reveal"><span class="n">04</span><span data-en="Known limitations (and how I'd fix them)">Limitaciones conocidas (y cómo las resolvería)</span></h3>
+    <ul class="list warn reveal">
+      <li data-en="<strong>Memory is in RAM</strong> (<code>InMemorySaver</code>): conversations are lost on restart. Next step: a persistent checkpointer (SQLite or Postgres).">La <strong>memoria está en RAM</strong> (<code>InMemorySaver</code>): las conversaciones se pierden al reiniciar. Siguiente paso: un checkpointer persistente (SQLite o Postgres).</li>
+      <li data-en="<strong>The phone number identifies the customer without verification</strong>: anyone who knows a number could see or cancel those appointments. Before production: a code sent by SMS or WhatsApp.">El <strong>teléfono identifica al cliente sin verificarlo</strong>: quien conozca un número podría ver o cancelar esas citas. Antes de producción: un código por SMS o WhatsApp.</li>
+      <li data-en="Services, staff and accounting are still CSV files edited by the owner; the app only reads them.">Servicios, empleadas y contabilidad siguen en CSV que edita la propietaria; la app solo los lee.</li>
+    </ul>
+
+    <div class="links">
+      <a class="btn btn-primary" href="https://github.com/albarodriguez7/ChatBot_Peluqueria" target="_blank" rel="noopener" data-en="See the code on GitHub ↗">Ver el código en GitHub ↗</a>
+      <a class="btn btn-outline" href="index.html#agents" data-en="See the agent animation">Ver la animación del agente</a>
+    </div>
+  </article>
+
+  <div class="links" style="margin-top:5rem;justify-content:center;">
+    <a class="btn btn-outline" href="index.html" data-en="← Back to portfolio">← Volver al portfolio</a>
+    <a class="btn btn-primary" href="mailto:albarodriguezperales7@gmail.com" data-en="✉ Get in touch">✉ Escríbeme</a>
+  </div>
+</main>
+
+<footer>Alba Rodríguez · Junior AI Engineer · 2026</footer>
+
+<script>
+(() => {
+  /* Idioma ES / EN: el mismo sistema que en index.html */
+  let saved = null;
+  try { saved = localStorage.getItem('lang'); } catch (e) {}
+  const param = new URLSearchParams(location.search).get('lang');
+  let lang = param || saved || ((navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en');
+  if (lang !== 'en') lang = 'es';
+  const TITLES = { es: 'Casos de estudio — Alba Rodríguez', en: 'Case studies — Alba Rodríguez' };
+  function apply() {
+    document.documentElement.lang = lang;
+    document.title = TITLES[lang];
+    document.querySelectorAll('[data-en]').forEach(el => {
+      if (el.dataset.es === undefined) el.dataset.es = el.innerHTML;
+      el.innerHTML = lang === 'en' ? el.dataset.en : el.dataset.es;
+    });
+  }
+  document.getElementById('lang-toggle').addEventListener('click', () => {
+    lang = lang === 'en' ? 'es' : 'en';
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    apply();
+  });
+  apply();
+
+  /* Aparición al hacer scroll */
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
