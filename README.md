@@ -1,42 +1,51 @@
-# Alba Rodríguez — Data Scientist
+# Alba Rodríguez — Junior AI Engineer
 
 🌐 **[albarodriguez7.github.io](https://albarodriguez7.github.io)** · 📧 [albarodriguezperales7@gmail.com](mailto:albarodriguezperales7@gmail.com)
 
 ---
 
-Perfil híbrido en Data Science y marketing digital. Combino análisis de datos, machine learning y visión de negocio para transformar información en decisiones estratégicas.
-
-Vengo del marketing digital y aterricé en Data Science. Busco mi primer rol como **Data Scientist o Data Analyst** — entiendo los datos y el negocio detrás.
+Desarrolladora junior de IA generativa con base en Data Science. Construyo agentes con LangChain y LangGraph que usan herramientas, RAG y datos reales, y despliego modelos como APIs.
 
 ---
 
 ## 💼 Proyectos
 
-### 🏠 [Predicción de precios Airbnb](https://github.com/albarodriguez7/EDA_Airbnb)
-EDA sobre datos de Airbnb en Madrid para identificar los factores que más influyen en el precio.  
-`Pandas` · `NumPy` · `Matplotlib` · `Seaborn`
+### ✂️ [Asistente de reservas con IA](https://github.com/albarodriguez7/ChatBot_Peluqueria)
+Agente que gestiona las citas de una peluquería con herramientas conectadas a SQLite, RAG para dudas del negocio, Google Calendar y tres apps en Streamlit.  
+`LangChain` · `LangGraph` · `Chroma` · `SQLite` · `Streamlit` · `Pytest` · `LangSmith`
+
+### 🎯 [Agente de cualificación de leads](https://github.com/albarodriguez7/AgentesIA_Marketing)
+Agente que usa herramientas para leer las webs de empresas y evaluarlas como posibles clientes.  
+`LangChain` · `LangGraph` · `Python`
+
+### 🔌 [API Infracciones de Tráfico](https://github.com/albarodriguez7/API_Infracciones_Trafico) · [demo en Render](https://api-infracciones-trafico.onrender.com/)
+API REST que expone un modelo de clasificación para hacer predicciones en tiempo real.  
+`FastAPI` · `Pydantic` · `Uvicorn`
 
 ### 🚦 [ML Infracciones de Tráfico](https://github.com/albarodriguez7/ML_Infracciones_Trafico)
 Modelo de clasificación para predecir infracciones de tráfico a partir de datos históricos.  
 `Scikit-learn` · `LightGBM` · `XGBoost` · `SciPy`
 
-### 🔌 [API Infracciones de Tráfico](https://github.com/albarodriguez7/API_Infracciones_Trafico)
-API REST para exponer el modelo anterior y hacer predicciones en tiempo real.  
-`FastAPI` · `Pydantic` · `Uvicorn`
+### 🏠 [Análisis de precios de Airbnb](https://github.com/albarodriguez7/EDA_Airbnb)
+Análisis exploratorio de datos de Airbnb en Madrid para identificar los factores que más influyen en el precio.  
+`Pandas` · `NumPy` · `Matplotlib` · `Seaborn`
 
 ---
 
 ## 🛠 Stack
 
-`Python` · `SQL` · `Scikit-learn` · `TensorFlow` · `PyTorch` · `Pandas` · `NumPy`  
-`Matplotlib` · `Seaborn` · `Tableau` · `Flask` · `FastAPI` · `Docker` · `AWS` · `Git`
+`Python` · `LangChain` · `LangGraph` · `RAG` · `Chroma` · `LangSmith` · `Streamlit` · `FastAPI`  
+`SQLite` · `SQL` · `Pytest` · `Docker` · `AWS` · `Git` · `Poetry` · `Scikit-learn` · `Pandas`
 
 ---
 
 ## 🎓 Formación
 
-**Bootcamp Data Science — The Bridge**  
-EDA · Machine Learning · Redes Neuronales · Despliegue de modelos · APIs · IA Generativa
+**Bootcamp Data Science e Inteligencia Artificial — The Bridge**  
+EDA · Machine Learning · Redes Neuronales · NLP · Despliegue de modelos · APIs · Cloud
+
+**Especialización en IA Generativa y Agentes** (2026 – actualidad)  
+LLMs · RAG · Prompt engineering · LangChain · LangGraph
 
 ---
 
