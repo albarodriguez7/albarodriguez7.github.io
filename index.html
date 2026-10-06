@@ -474,6 +474,11 @@
     margin-bottom: 0.4rem;
   }
 
+  .stat-num.compact {   /* cifras largas (p. ej. el coste) para que no se salgan de la tarjeta */
+    font-size: clamp(1.15rem, 2.1vw, 1.6rem);
+    white-space: nowrap;
+  }
+
   .stat-label {
     font-size: 0.72rem;
     color: var(--muted);
@@ -1077,7 +1082,7 @@
     </p>
     <div class="proof-bar">
       <span class="proof"><b>99 %</b> <span data-en="accuracy on 35 real leads">de acierto en 35 leads reales</span></span>
-      <span class="proof"><b data-en="~$0.003">~0,003 $</b> <span data-en="per qualified lead">por lead cualificado</span></span>
+      <span class="proof"><b data-en="$0.003">0,003 $</b> <span data-en="approx. per qualified lead">aprox. por lead cualificado</span></span>
       <span class="proof"><b>+100</b> <span data-en="automated tests">tests automatizados</span></span>
     </div>
     <div class="hero-ctas">
@@ -1158,7 +1163,7 @@
       </div>
       <div class="metrics">
         <div class="metric"><b>99 %</b><span data-en="correct action · 35 leads">acción correcta · 35 leads</span></div>
-        <div class="metric"><b data-en="~$0.003">~0,003 $</b><span data-en="per lead">por lead</span></div>
+        <div class="metric"><b data-en="$0.003">0,003 $</b><span data-en="approx. per lead">aprox. por lead</span></div>
         <div class="metric"><b>5–20 s</b><span data-en="per lead">por lead</span></div>
       </div>
       <div class="project-tags">
@@ -1427,8 +1432,8 @@
         <div class="stat-label" data-en="Automated tests">Tests automatizados</div>
       </div>
       <div class="stat">
-        <div class="stat-num" data-en="~$0.003">~0,003 $</div>
-        <div class="stat-label" data-en="Cost per qualified lead">Coste por lead cualificado</div>
+        <div class="stat-num compact" data-en="$0.003">0,003 $</div>
+        <div class="stat-label" data-en="Approx. cost per qualified lead">Coste aprox. por lead cualificado</div>
       </div>
     </div>
   </div>
