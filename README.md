@@ -15,8 +15,8 @@ Agente que gestiona las citas de una peluquería con herramientas conectadas a S
 `LangChain` · `LangGraph` · `Chroma` · `SQLite` · `Streamlit` · `Pytest` · `LangSmith`
 
 ### 🎯 [Agente de cualificación de leads](https://github.com/albarodriguez7/AgentesIA_Marketing)
-Agente que usa herramientas para leer las webs de empresas y evaluarlas como posibles clientes.  
-`LangChain` · `LangGraph` · `Python`
+Agente que usa herramientas para leer las webs de empresas y evaluarlas como posibles clientes. Evaluado en LangSmith con 35 leads reales: 99 % de acierto en la acción.  
+`LangChain` · `LangGraph` · `LangSmith` · `Pydantic` · `Pytest`
 
 ### 🔌 [API Infracciones de Tráfico](https://github.com/albarodriguez7/API_Infracciones_Trafico) · [demo en Render](https://api-infracciones-trafico.onrender.com/)
 API REST que expone un modelo de clasificación para hacer predicciones en tiempo real.  
