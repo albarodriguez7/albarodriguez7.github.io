@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+<script>document.documentElement.classList.add('js');</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -529,12 +530,381 @@
     to   { transform: translateX(-50%); }
   }
 
+  /* ── HERO: grafo de agentes animado (canvas) ── */
+  #agent-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.6) 45%, #000 80%);
+            mask-image: linear-gradient(90deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.6) 45%, #000 80%);
+  }
+
+  .hero-inner { position: relative; z-index: 1; }
+
+  /* Terminal con código LangGraph tecleándose */
+  .hero-terminal {
+    width: 370px;
+    z-index: 1;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(124,106,255,0.08);
+    animation: fadeUpCenter 0.8s ease forwards 0.8s;
+  }
+
+  @media (min-width: 1100px) {
+    .hero-inner { max-width: calc(100% - 430px); }
+    h1 { font-size: clamp(3rem, 6vw, 6rem); }
+  }
+
+  .terminal-title {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    opacity: 0.7;
+  }
+
+  .terminal-body.typing {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.75;
+    height: 23rem;
+    overflow: hidden;
+    white-space: pre;
+  }
+
+  .t-row { min-height: 1.75em; }
+  .t-kw   { color: #c792ea; }
+  .t-fn   { color: #82aaff; }
+  .t-str  { color: #c3e88d; }
+  .t-com  { color: #6b6b85; font-style: italic; }
+  .t-out  { color: var(--muted); }
+  .t-out.ai   { color: var(--accent2); }
+  .t-out.tool { color: var(--accent); }
+  .t-out.done { color: #fff; }
+  .t-row .t-cursor { width: 7px; height: 12px; margin-left: 1px; }
+
+  /* ── SECCIÓN: anatomía de un agente LangGraph ── */
+  .agent-lab {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  @media (max-width: 860px) { .agent-lab { grid-template-columns: 1fr; } }
+
+  .lab-panel {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lab-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .lab-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .lab-status::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(0,229,160,0.6);
+    animation: ping 1.6s ease-out infinite;
+  }
+
+  #graph-svg { width: 100%; height: auto; display: block; }
+
+  .g-edge {
+    fill: none;
+    stroke: rgba(255,255,255,0.18);
+    stroke-width: 1.5;
+    transition: stroke 0.3s;
+  }
+  .g-edge.cond { stroke-dasharray: 5 5; }
+  .g-edge.live { stroke: var(--accent); }
+  .g-edge.cond.live { animation: dash 0.6s linear infinite; }
+
+  .g-node rect {
+    fill: var(--surface2);
+    stroke: rgba(255,255,255,0.14);
+    stroke-width: 1.5;
+    transition: stroke 0.3s, fill 0.3s;
+  }
+  .g-node text {
+    fill: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .g-node text.sub { fill: var(--muted); font-size: 9.5px; opacity: 0.75; }
+  .g-node.term rect { fill: rgba(124,106,255,0.12); stroke: rgba(124,106,255,0.35); }
+  .g-node.term text { fill: var(--accent2); font-size: 11px; }
+  .g-node .halo { transform-box: fill-box; transform-origin: center; fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; }
+  .g-node.active rect { stroke: var(--accent); fill: rgba(0,229,160,0.1); }
+  .g-node.active .halo { animation: halo 1.2s ease-out infinite; }
+  .g-node.term.active rect { stroke: var(--accent2); fill: rgba(124,106,255,0.22); }
+
+  .g-edge-label {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    opacity: 0.6;
+  }
+
+  #graph-pulse { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); opacity: 0; }
+
+  .thinking {
+    position: absolute;
+    left: 1.5rem; bottom: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .thinking.show { opacity: 1; }
+  .thinking span {
+    display: inline-block;
+    width: 4px; height: 4px;
+    margin-left: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1s infinite;
+  }
+  .thinking span:nth-child(2) { animation-delay: 0.15s; }
+  .thinking span:nth-child(3) { animation-delay: 0.3s; }
+
+  /* Log del estado: state["messages"] */
+  .state-log {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 330px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+
+  .msg {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    align-items: start;
+    padding: 0.55rem 0.7rem;
+    border-radius: 6px;
+    background: var(--surface2);
+    border-left: 2px solid var(--muted);
+    animation: msgIn 0.4s ease both;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .msg-role {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .msg.ai   { border-left-color: var(--accent2); }
+  .msg.ai .msg-role { background: rgba(124,106,255,0.15); color: var(--accent2); }
+  .msg.tool { border-left-color: var(--accent); }
+  .msg.tool .msg-role { background: rgba(0,229,160,0.12); color: var(--accent); }
+  .msg .call { color: #82aaff; }
+
+  .lab-caption {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    max-width: 720px;
+  }
+
+  /* ── Cadena RAG (LCEL) ── */
+  .rag-panel { margin-top: 1rem; }
+
+  .rag-chain {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.6rem;
+    padding: 1.2rem 0 0.4rem;
+  }
+
+  .rag-chain::before {
+    content: '';
+    position: absolute;
+    left: 8%; right: 8%;
+    top: calc(1.2rem + 22px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15) 10%, rgba(255,255,255,0.15) 90%, transparent);
+  }
+
+  .rag-dot {
+    position: absolute;
+    top: calc(1.2rem + 22px - 4px);
+    left: 8%;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: ragTravel 7.2s linear infinite;
+  }
+
+  .rag-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .rag-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: var(--surface2);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    font-size: 1.05rem;
+    position: relative;
+    z-index: 1;
+    animation: ragLit 7.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 1s);
+  }
+
+  .rag-name { font-family: var(--mono); font-size: 0.7rem; color: var(--text); }
+  .rag-sub  { font-size: 0.65rem; color: var(--muted); opacity: 0.75; line-height: 1.3; }
+
+  .lcel {
+    margin-top: 1.2rem;
+    padding: 0.8rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .lcel .pipe { color: var(--accent); font-weight: 500; animation: pipeGlow 2.4s ease-in-out infinite; }
+  .lcel .pipe:nth-of-type(2) { animation-delay: 0.3s; }
+  .lcel .pipe:nth-of-type(3) { animation-delay: 0.6s; }
+  .lcel .pipe:nth-of-type(4) { animation-delay: 0.9s; }
+
+  @media (max-width: 700px) {
+    .rag-chain { grid-template-columns: repeat(3, 1fr); row-gap: 1.2rem; }
+    .rag-chain::before, .rag-dot { display: none; }
+  }
+
+  /* ── "Cómo trabajo" como pipeline de nodos ── */
+  #workflow .projects-grid { counter-reset: step; }
+  #workflow .project-card { padding-left: 2rem; }
+  #workflow .project-card::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.8s ease;
+  }
+  #workflow .project-card.in::after { transform: scaleY(1); }
+
+  .project-card { transition: background 0.2s, border-color 0.3s, transform 0.3s; }
+  a.project-card:hover { border-color: rgba(0,229,160,0.35); transform: translateY(-3px); }
+
+  /* ── Aparición al hacer scroll ── */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s ease, transform 0.7s ease, background 0.2s, border-color 0.3s;
+  }
+  .js .reveal.in { opacity: 1; transform: none; }
+  .js a.project-card.reveal.in:hover { transform: translateY(-3px); }
+
+  @keyframes fadeUpCenter {
+    from { opacity: 0; transform: translateY(calc(-50% + 24px)); }
+    to   { opacity: 1; transform: translateY(-50%); }
+  }
+  @keyframes ping {
+    0%   { box-shadow: 0 0 0 0 rgba(0,229,160,0.6); }
+    100% { box-shadow: 0 0 0 8px rgba(0,229,160,0); }
+  }
+  @keyframes dash { to { stroke-dashoffset: -10; } }
+  @keyframes halo {
+    0%   { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.12); }
+  }
+  @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes ragTravel {
+    0%   { left: 8%;  opacity: 0; }
+    5%   { opacity: 1; }
+    70%  { left: calc(92% - 8px); opacity: 1; }
+    76%, 100% { left: calc(92% - 8px); opacity: 0; }
+  }
+  @keyframes ragLit {
+    0%, 14%, 100% { border-color: rgba(255,255,255,0.12); box-shadow: none; }
+    4%, 8% { border-color: var(--accent); box-shadow: 0 0 18px rgba(0,229,160,0.35); }
+  }
+  @keyframes pipeGlow {
+    0%, 100% { text-shadow: none; opacity: 0.7; }
+    50% { text-shadow: 0 0 10px var(--accent); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .skills-track { animation: none; }
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
     #hero { padding: 0 1.5rem; }
     section { padding: 4rem 1.5rem; }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: clamp(2.2rem, 10.5vw, 3rem); }
+    .hero-inner { min-width: 0; }
+    .msg { grid-template-columns: 1fr; gap: 0.3rem; }
+    .msg-role { justify-self: start; }
+    .state-log { min-height: 0; }
   }
 </style>
 </head>
@@ -545,6 +915,7 @@
   <a href="#hero" class="nav-logo">AR_</a>
   <ul class="nav-links">
     <li><a href="#projects">Proyectos</a></li>
+    <li><a href="#agents">Agentes</a></li>
     <li><a href="#about">Sobre mí</a></li>
     <li><a href="#languages">Idiomas</a></li>
     <li><a href="#contact">Contacto</a></li>
@@ -553,6 +924,7 @@
 
 <!-- HERO -->
 <section id="hero" style="max-width:100%;padding-top:5rem;">
+  <canvas id="agent-canvas" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <div class="hero-tag">Junior AI Engineer · IA Generativa</div>
     <h1>
@@ -568,23 +940,15 @@
     </div>
   </div>
 
-  <!-- Terminal decoration -->
-  <div class="hero-terminal">
+  <!-- Terminal: construcción de un agente LangGraph -->
+  <div class="hero-terminal" aria-hidden="true">
     <div class="terminal-bar">
       <div class="dot dot-r"></div>
       <div class="dot dot-y"></div>
       <div class="dot dot-g"></div>
+      <span class="terminal-title">agent.py — langgraph</span>
     </div>
-    <div class="terminal-body">
-      <div class="t-line"><span class="t-prompt">~$</span><span class="t-cmd">poetry run pytest</span></div>
-      <div class="t-output">tests de reservas... ✓</div>
-      <div class="t-output">tests del panel... ✓</div>
-      <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">~$</span><span class="t-cmd">streamlit run app.py</span></div>
-      <div class="t-output">Cargando RAG (Chroma)... ✓</div>
-      <div class="t-output">Agente LangGraph listo ✓</div>
-      <div class="t-output">Herramientas conectadas ✓</div>
-      <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">~$</span><span class="t-cursor"></span></div>
-    </div>
+    <div class="terminal-body typing" id="typing-terminal"></div>
   </div>
 </section>
 
@@ -714,6 +1078,91 @@
       </div>
     </a>
 </div>
+</section>
+
+<!-- AGENTES: anatomía de un agente LangGraph + cadena RAG -->
+<section id="agents">
+  <div class="section-label">Bajo el capó</div>
+  <h2>Así piensa un agente</h2>
+
+  <div class="agent-lab">
+    <div class="lab-panel">
+      <div class="lab-head">
+        <span>StateGraph · ReAct</span>
+        <span class="lab-status" id="graph-status">ejecutando</span>
+      </div>
+      <svg id="graph-svg" viewBox="10 0 450 360" role="img" aria-label="Grafo de LangGraph: start, nodo agent, nodo tools y end. El agente llama a herramientas en bucle hasta dar la respuesta final.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="rgba(255,255,255,0.35)"/>
+          </marker>
+        </defs>
+
+        <path id="e-start" class="g-edge" d="M115 60 L115 144" marker-end="url(#arrow)"/>
+        <path id="e-tools" class="g-edge cond" d="M190 154 C 220 116, 262 116, 290 152" marker-end="url(#arrow)"/>
+        <path id="e-back"  class="g-edge" d="M290 190 C 262 226, 220 226, 190 188" marker-end="url(#arrow)"/>
+        <path id="e-end"   class="g-edge cond" d="M115 196 L115 300" marker-end="url(#arrow)"/>
+
+        <text class="g-edge-label" x="240" y="112" text-anchor="middle">tool_calls</text>
+        <text class="g-edge-label" x="240" y="236" text-anchor="middle">resultado</text>
+        <text class="g-edge-label" x="125" y="252">respuesta final</text>
+
+        <g class="g-node term" id="n-start">
+          <rect class="halo" x="60" y="18" width="110" height="38" rx="19"/>
+          <rect x="60" y="18" width="110" height="38" rx="19"/>
+          <text x="115" y="38">__start__</text>
+        </g>
+        <g class="g-node" id="n-agent">
+          <rect class="halo" x="40" y="146" width="150" height="50" rx="8"/>
+          <rect x="40" y="146" width="150" height="50" rx="8"/>
+          <text x="115" y="164">agent</text>
+          <text class="sub" x="115" y="182">LLM · call_model</text>
+        </g>
+        <g class="g-node" id="n-tools">
+          <rect class="halo" x="290" y="146" width="140" height="50" rx="8"/>
+          <rect x="290" y="146" width="140" height="50" rx="8"/>
+          <text x="360" y="164">tools</text>
+          <text class="sub" x="360" y="182">ToolNode · SQLite</text>
+        </g>
+        <g class="g-node term" id="n-end">
+          <rect class="halo" x="60" y="302" width="110" height="38" rx="19"/>
+          <rect x="60" y="302" width="110" height="38" rx="19"/>
+          <text x="115" y="322">__end__</text>
+        </g>
+
+        <circle id="graph-pulse" r="5" cx="115" cy="60"/>
+      </svg>
+      <div class="thinking" id="graph-thinking">el LLM está razonando<span></span><span></span><span></span></div>
+    </div>
+
+    <div class="lab-panel">
+      <div class="lab-head">
+        <span>state["messages"]</span>
+        <span id="msg-count">0 mensajes</span>
+      </div>
+      <ul class="state-log" id="state-log" aria-live="off"></ul>
+    </div>
+  </div>
+  <p class="lab-caption">
+    Simulación del agente de reservas: el nodo <strong>agent</strong> decide qué herramienta usar, <strong>tools</strong> la ejecuta contra la base de datos y el resultado vuelve al estado hasta que el LLM puede responder.
+  </p>
+
+  <div class="lab-panel rag-panel">
+    <div class="lab-head">
+      <span>Cadena RAG · LCEL</span>
+      <span class="lab-status">retrieval</span>
+    </div>
+    <div class="rag-chain">
+      <span class="rag-dot" aria-hidden="true"></span>
+      <div class="rag-step" style="--i:0"><div class="rag-icon">💬</div><div class="rag-name">pregunta</div><div class="rag-sub">«¿Hacéis mechas?»</div></div>
+      <div class="rag-step" style="--i:1"><div class="rag-icon">🧬</div><div class="rag-name">embeddings</div><div class="rag-sub">texto → vector</div></div>
+      <div class="rag-step" style="--i:2"><div class="rag-icon">🗂️</div><div class="rag-name">retriever</div><div class="rag-sub">Chroma · top-k</div></div>
+      <div class="rag-step" style="--i:3"><div class="rag-icon">🧩</div><div class="rag-name">prompt</div><div class="rag-sub">contexto + pregunta</div></div>
+      <div class="rag-step" style="--i:4"><div class="rag-icon">🧠</div><div class="rag-name">llm</div><div class="rag-sub">genera la respuesta</div></div>
+      <div class="rag-step" style="--i:5"><div class="rag-icon">✅</div><div class="rag-name">respuesta</div><div class="rag-sub">con fuentes reales</div></div>
+    </div>
+    <div class="lcel">chain = {"context": retriever, "question": RunnablePassthrough()} <span class="pipe">|</span> prompt <span class="pipe">|</span> llm <span class="pipe">|</span> StrOutputParser()</div>
+  </div>
 </section>
 
 <!-- ABOUT -->
@@ -894,6 +1343,300 @@
 <footer>
   Alba Rodríguez · Junior AI Engineer · 2026
 </footer>
+
+<script>
+(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // Espera a que un elemento esté en pantalla y la pestaña visible
+  function visibility(el) {
+    let onScreen = false, waiters = [];
+    const flush = () => { if (onScreen && !document.hidden) { waiters.forEach(r => r()); waiters = []; } };
+    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; flush(); }, { threshold: 0.15 }).observe(el);
+    document.addEventListener('visibilitychange', flush);
+    return {
+      get active() { return onScreen && !document.hidden; },
+      wait: () => (onScreen && !document.hidden) ? Promise.resolve() : new Promise(r => waiters.push(r))
+    };
+  }
+
+  /* ── 1. Hero: red de nodos de agente con mensajes viajando ── */
+  const canvas = document.getElementById('agent-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const hero = document.getElementById('hero');
+    const vis = visibility(hero);
+    const LABELS = ['LLM', 'tool', 'retriever', 'memory', 'router', 'Chroma', 'ToolNode', 'StateGraph'];
+    let w, h, nodes = [], packets = [], last = 0;
+
+    function setup() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = hero.clientWidth; h = hero.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.min(70, Math.round(w * h / 20000));
+      nodes = Array.from({ length: n }, (_, i) => ({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+        r: Math.random() * 1.6 + 1.2,
+        label: i < LABELS.length ? LABELS[i] : null,
+        glow: 0
+      }));
+      packets = [];
+    }
+
+    const LINK = 150;
+    function draw(t) {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < LINK) {
+            ctx.strokeStyle = `rgba(0,229,160,${0.12 * (1 - d / LINK)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for (const p of packets) {
+        const x = p.a.x + (p.b.x - p.a.x) * p.t, y = p.a.y + (p.b.y - p.a.y) * p.t;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      for (const n of nodes) {
+        const g = n.glow;
+        ctx.fillStyle = n.label ? `rgba(124,106,255,${0.55 + g * 0.45})` : `rgba(0,229,160,${0.35 + g * 0.6})`;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + g * 2.5, 0, Math.PI * 2); ctx.fill();
+        if (n.label) {
+          ctx.font = '10px "DM Mono", monospace';
+          ctx.fillStyle = `rgba(200,200,216,${0.35 + g * 0.5})`;
+          ctx.fillText(n.label, n.x + 7, n.y - 6);
+        }
+      }
+    }
+
+    function step(t) {
+      const dt = Math.min(50, t - last); last = t;
+      for (const n of nodes) {
+        n.x += n.vx * dt * 0.06; n.y += n.vy * dt * 0.06;
+        if (n.x < 0 || n.x > w) n.vx *= -1;
+        if (n.y < 0 || n.y > h) n.vy *= -1;
+        n.glow = Math.max(0, n.glow - dt * 0.0015);
+      }
+      // nuevos mensajes entre nodos conectados (como edges de un grafo)
+      if (packets.length < 14 && Math.random() < 0.08) {
+        const a = nodes[Math.random() * nodes.length | 0];
+        const near = nodes.filter(b => b !== a && Math.hypot(a.x - b.x, a.y - b.y) < LINK);
+        if (near.length) {
+          const b = near[Math.random() * near.length | 0];
+          packets.push({ a, b, t: 0, color: Math.random() < 0.7 ? '#00e5a0' : '#7c6aff' });
+          a.glow = 1;
+        }
+      }
+      packets = packets.filter(p => {
+        p.t += dt * 0.0012;
+        if (p.t >= 1) { p.b.glow = 1; return false; }
+        return true;
+      });
+      draw(t);
+    }
+
+    async function loop() {
+      while (true) {
+        await vis.wait();
+        await new Promise(r => requestAnimationFrame(t => { step(t); r(); }));
+      }
+    }
+
+    setup();
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { setup(); if (reduced) draw(0); }, 200); });
+    if (reduced) draw(0); else { last = performance.now(); loop(); }
+  }
+
+  /* ── 2. Terminal: se teclea un agente LangGraph y se ejecuta ── */
+  const term = document.getElementById('typing-terminal');
+  if (term) {
+    const P = ['t-kw', 'from '], I = ['t-kw', 'import '];
+    const script = [
+      { prompt: true, seg: [['', 'cat agent.py']] },
+      { seg: [P, ['', 'langgraph.graph '], I, ['', 'StateGraph, END']] },
+      { seg: [P, ['', 'langgraph.prebuilt '], I, ['', 'ToolNode']] },
+      { seg: [['', '']] },
+      { seg: [['t-com', '# herramientas del agente']] },
+      { seg: [['', 'tools = ['], ['t-fn', 'buscar_hueco'], ['', ', '], ['t-fn', 'reservar_cita'], ['', ']']] },
+      { seg: [['', 'g = '], ['t-fn', 'StateGraph'], ['', '(State)']] },
+      { seg: [['', 'g.'], ['t-fn', 'add_node'], ['', '('], ['t-str', '"agent"'], ['', ', call_model)']] },
+      { seg: [['', 'g.'], ['t-fn', 'add_node'], ['', '('], ['t-str', '"tools"'], ['', ', ToolNode(tools))']] },
+      { seg: [['', 'g.'], ['t-fn', 'add_conditional_edges'], ['', '('], ['t-str', '"agent"'], ['', ', route)']] },
+      { seg: [['', 'g.'], ['t-fn', 'add_edge'], ['', '('], ['t-str', '"tools"'], ['', ', '], ['t-str', '"agent"'], ['', ')']] },
+      { seg: [['', 'app = g.'], ['t-fn', 'compile'], ['', '()']] },
+      { prompt: true, seg: [['', 'python agent.py']], pause: 500 },
+      { out: '▸ agent → tool_call: buscar_hueco', cls: 'ai' },
+      { out: '▸ tools → "viernes 17:00 libre"', cls: 'tool' },
+      { out: '▸ agent → tool_call: reservar_cita', cls: 'ai' },
+      { out: '▸ tools → cita #142 creada ✓', cls: 'tool' },
+      { out: '▸ agent → respuesta final ✓', cls: 'done' },
+    ];
+    const vis = visibility(term);
+    const cursor = () => { const c = document.createElement('span'); c.className = 't-cursor'; return c; };
+    const newRow = (prompt) => {
+      const row = document.createElement('div'); row.className = 't-row';
+      if (prompt) { const p = document.createElement('span'); p.className = 't-prompt'; p.textContent = '~$ '; row.appendChild(p); }
+      term.appendChild(row); return row;
+    };
+
+    function renderStatic() {
+      term.innerHTML = '';
+      for (const line of script) {
+        const row = newRow(line.prompt);
+        if (line.out) { row.className += ' t-out ' + line.cls; row.textContent = line.out; continue; }
+        for (const [cls, txt] of line.seg) { const s = document.createElement('span'); s.className = cls; s.textContent = txt; row.appendChild(s); }
+      }
+      newRow(true).appendChild(cursor());
+    }
+
+    async function run() {
+      while (true) {
+        term.innerHTML = '';
+        for (const line of script) {
+          await vis.wait();
+          if (line.pause) await sleep(line.pause);
+          const row = newRow(line.prompt);
+          if (line.out) {
+            await sleep(520);
+            row.className += ' t-out ' + line.cls; row.textContent = line.out;
+            continue;
+          }
+          const c = cursor(); row.appendChild(c);
+          for (const [cls, txt] of line.seg) {
+            const s = document.createElement('span'); s.className = cls; row.insertBefore(s, c);
+            for (const ch of txt) { s.textContent += ch; await sleep(line.prompt ? 55 : 16 + Math.random() * 22); }
+          }
+          await sleep(line.prompt ? 350 : 90);
+          c.remove();
+        }
+        newRow(true).appendChild(cursor());
+        await sleep(5000);
+      }
+    }
+    reduced ? renderStatic() : run();
+  }
+
+  /* ── 3. Grafo LangGraph: ejecución paso a paso ── */
+  const svg = document.getElementById('graph-svg');
+  if (svg) {
+    const pulse = document.getElementById('graph-pulse');
+    const log = document.getElementById('state-log');
+    const count = document.getElementById('msg-count');
+    const status = document.getElementById('graph-status');
+    const thinking = document.getElementById('graph-thinking');
+    const node = id => document.getElementById('n-' + id);
+    const edge = id => document.getElementById('e-' + id);
+    const vis = visibility(svg);
+
+    const steps = [
+      { node: 'start', msg: ['human', 'HumanMessage', '¿Tienes hueco el viernes a las 17:00 para un corte?'] },
+      { edge: 'start', node: 'agent', think: true, msg: ['ai', 'AIMessage', '<span class="call">tool_call</span> buscar_hueco(dia="viernes", hora="17:00")'] },
+      { edge: 'tools', node: 'tools', msg: ['tool', 'ToolMessage', '{"disponible": true, "estilista": "Laura"}'] },
+      { edge: 'back', node: 'agent', think: true, msg: ['ai', 'AIMessage', '<span class="call">tool_call</span> reservar_cita(servicio="corte", hora="17:00")'] },
+      { edge: 'tools', node: 'tools', msg: ['tool', 'ToolMessage', '{"ok": true, "cita_id": 142}'] },
+      { edge: 'back', node: 'agent', think: true, msg: ['ai', 'AIMessage', '¡Listo! Te he reservado el viernes a las 17:00 con Laura ✂️'] },
+      { edge: 'end', node: 'end' },
+    ];
+
+    function setActive(id) {
+      svg.querySelectorAll('.g-node').forEach(n => n.classList.toggle('active', n.id === 'n-' + id));
+    }
+
+    function addMsg([cls, role, html]) {
+      const li = document.createElement('li');
+      li.className = 'msg ' + cls;
+      li.innerHTML = `<span class="msg-role">${role}</span><span>${html}</span>`;
+      log.appendChild(li);
+      const n = log.children.length;
+      count.textContent = n + (n === 1 ? ' mensaje' : ' mensajes');
+    }
+
+    function travel(path, ms) {
+      const len = path.getTotalLength();
+      path.classList.add('live');
+      pulse.style.opacity = 1;
+      return new Promise(res => {
+        const t0 = performance.now();
+        const tick = now => {
+          const k = Math.min(1, (now - t0) / ms);
+          const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          const pt = path.getPointAtLength(e * len);
+          pulse.setAttribute('cx', pt.x); pulse.setAttribute('cy', pt.y);
+          if (k < 1) requestAnimationFrame(tick);
+          else { path.classList.remove('live'); pulse.style.opacity = 0; res(); }
+        };
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function renderStatic() {
+      steps.forEach(s => s.msg && addMsg(s.msg));
+      setActive('end');
+      status.textContent = 'completado';
+    }
+
+    async function run() {
+      while (true) {
+        log.innerHTML = ''; count.textContent = '0 mensajes';
+        status.textContent = 'ejecutando';
+        for (const s of steps) {
+          await vis.wait();
+          if (s.edge) { setActive(null); await travel(edge(s.edge), 900); }
+          setActive(s.node);
+          if (s.think) { thinking.classList.add('show'); await sleep(1100); thinking.classList.remove('show'); }
+          if (s.msg) addMsg(s.msg);
+          await sleep(s.node === 'tools' ? 900 : 700);
+        }
+        status.textContent = 'completado';
+        await sleep(3500);
+        setActive(null);
+        await sleep(400);
+      }
+    }
+    reduced ? renderStatic() : run();
+  }
+
+  /* ── 4. Aparición al hacer scroll y contador ── */
+  const targets = document.querySelectorAll('section:not(#hero) h2, section:not(#hero) .section-label, .project-card, .stat, .lab-panel, .about-text, .lab-caption');
+  targets.forEach(el => {
+    el.classList.add('reveal');
+    const sibs = el.parentElement.children;
+    const idx = Array.prototype.indexOf.call(sibs, el);
+    if (el.matches('.project-card, .stat')) el.style.transitionDelay = `${Math.min(idx, 6) * 80}ms, ${Math.min(idx, 6) * 80}ms, 0ms, 0ms`;
+  });
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    io.unobserve(e.target);
+    setTimeout(() => { e.target.style.transitionDelay = ''; }, 1300);
+    if (e.target.matches('.stat')) {
+      const num = e.target.querySelector('.stat-num');
+      const m = num && num.textContent.match(/^(\+?)(\d+)$/);
+      if (m && +m[2] > 0 && !reduced) {
+        const target = +m[2], t0 = performance.now();
+        const tick = now => {
+          const k = Math.min(1, (now - t0) / 1200);
+          num.textContent = m[1] + Math.round(target * (1 - Math.pow(1 - k, 3)));
+          if (k < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }
+  }), { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  targets.forEach(el => io.observe(el));
+})();
+</script>
 
 </body>
 </html>
