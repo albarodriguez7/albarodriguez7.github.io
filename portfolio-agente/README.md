@@ -59,16 +59,16 @@ Para forzar un idioma, añade `?lang=en` o `?lang=es` a la URL.
 
 ## Publicar en GitHub Pages
 
-**Como versión de prueba (sin tocar la web actual):** haz merge de esta carpeta en `main` y estará en `https://albarodriguez7.github.io/portfolio-agente/`. Lleva `<meta name="robots" content="noindex">` para que Google no la indexe mientras sea de prueba.
+Esta versión vive **aparte** del portfolio clásico, que no se toca:
 
-**Para sustituir la web publicada:**
+| Versión | URL |
+|---|---|
+| Portfolio clásico | `https://albarodriguez7.github.io/` |
+| Esta versión (agente) | `https://albarodriguez7.github.io/portfolio-agente/` |
 
-1. Mueve el contenido de `portfolio-agente/` a la raíz del repositorio y reemplaza `index.html`. Puedes guardar la versión anterior como `clasico.html`.
-2. En `index.html`:
-   - quita la línea `<meta name="robots" content="noindex">`;
-   - cambia `canonical`, `og:url`, `og:image` y `twitter:image` a `https://albarodriguez7.github.io/`.
-3. En el pie, el enlace «Versión clásica del portfolio» apunta a `/`. Apúntalo a `/clasico.html` o elimínalo.
-4. Los enlaces a `/casos.html` y `/CV_Alba_Rodriguez_AI_Engineer.pdf` siguen funcionando sin cambios.
+Para publicarla basta con hacer merge de esta carpeta en `main`. Las dos versiones comparten `casos.html` y el CV de la raíz, y el pie de esta enlaza a la versión clásica.
+
+Ahora lleva `<meta name="robots" content="noindex">` para que Google no la indexe. Si quieres que aparezca en buscadores, borra esa línea de `index.html`.
 
 ## Accesibilidad y rendimiento
 
